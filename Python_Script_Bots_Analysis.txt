@@ -1,0 +1,26 @@
+# This code was used for each day - 7-20 to 7-25
+
+# -*- coding: utf-8 -*-
+import dataiku
+import pandas as pd, numpy as np
+from dataiku import pandasutils as pdu
+
+input_dataset = dataiku.Dataset("7-20")
+output_dataset = dataiku.Dataset("7-20_bots")
+
+
+with output_dataset .get_writer() as writer:
+    for input_chunk_df in input_dataset.iter_dataframes(10000):
+        # input_chunk_df is a dataframe containing just a
+        # chunk of data from input_dataset, with at most 10000 records
+        
+        df = input_chunk_df
+     
+        # Process here the data ...
+        df['isBot'] = df.groupby(['user', 'coordinate', 'pixel_color'])['user'].transform('size').ge(2).astype(int)
+        df.loc[df['isBot'] == 1, 'isBot'] = 1
+
+        output_chunk_df = df
+        
+    # Append the processed chunk to the output
+        writer.write_dataframe(output_chunk_df)
